@@ -1,0 +1,117 @@
+{
+  "info": {
+    "name": "Hotel Offer Orchestrator API",
+    "_postman_id": "hotel-offer-orchestrator-collection",
+    "description": "Postman Collection for testing Hotel Offer Orchestrator (Node.js, Express, Temporal, Redis)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Valid City with Overlaps (Delhi)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/hotels?city=delhi",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "hotels"],
+          "query": [
+            {
+              "key": "city",
+              "value": "delhi"
+            }
+          ]
+        },
+        "description": "Fetches aggregated, deduplicated hotels in Delhi picking cheaper price for overlapping hotels."
+      }
+    },
+    {
+      "name": "2. Filter Hotels by Price Range (Redis ZRANGEBYSCORE)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/hotels?city=delhi&minPrice=5000&maxPrice=6000",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "hotels"],
+          "query": [
+            {
+              "key": "city",
+              "value": "delhi"
+            },
+            {
+              "key": "minPrice",
+              "value": "5000"
+            },
+            {
+              "key": "maxPrice",
+              "value": "6000"
+            }
+          ]
+        },
+        "description": "Tests native Redis price filtering between minPrice and maxPrice."
+      }
+    },
+    {
+      "name": "3. City with No Results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/hotels?city=atlantis",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "hotels"],
+          "query": [
+            {
+              "key": "city",
+              "value": "atlantis"
+            }
+          ]
+        },
+        "description": "Tests graceful response (empty array) for an unknown city."
+      }
+    },
+    {
+      "name": "4. Simulate Supplier A Down",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/supplierA/hotels?simulateDown=true",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["supplierA", "hotels"],
+          "query": [
+            {
+              "key": "simulateDown",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "Simulates 503 outage on Supplier A to verify resilience."
+      }
+    },
+    {
+      "name": "5. Health Check Endpoint (/health)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["health"]
+        },
+        "description": "Bonus point: checks health of Supplier A, Supplier B, and Redis."
+      }
+    }
+  ]
+}

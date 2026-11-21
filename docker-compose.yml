@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: hotel-redis
+    ports:
+      - "6379:6379"
+
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: temporal-server
+    environment:
+      - DB=sqlite
+    ports:
+      - "7233:7233"
+
+  temporal-ui:
+    image: temporalio/ui:2.26.0
+    container_name: temporal-web-ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    ports:
+      - "8080:8080"
+    depends_on:
+      - temporal
+
+  app:
+    build: .
+    container_name: hotel-orchestrator-app
+    command: npm start
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - SUPPLIER_BASE_URL=http://localhost:3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      - redis
+      - temporal
+
+  worker:
+    build: .
+    container_name: hotel-orchestrator-worker
+    command: npm run worker
+    environment:
+      - SUPPLIER_BASE_URL=http://app:3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      - app
+      - redis
+      - temporal
